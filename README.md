@@ -6,7 +6,7 @@ Clone the repository locally
 ```
 $ git clone git@github.com:blalab/csv2mr.git
 ```
-Access to the repository folder
+Access the repository folder
 ```
 $ cd csv2mr
 ```
