@@ -6,6 +6,10 @@ Clone the repository locally
 ```
 $ git clone git@github.com:blalab/csv2mr.git
 ```
+Install "requests" module
+```
+$ pip install requests
+```
 Access the repository folder
 ```
 $ cd csv2mr
