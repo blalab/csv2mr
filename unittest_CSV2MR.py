@@ -7,7 +7,7 @@ class TestMapper(unittest.TestCase):
 
     def setUp(self):
 
-        self.cm = Mapper()
+        self.cm = Mapper('ZOMBIE_TESTER')
         self.csv_filename = 'fixtures/TT1.csv'
         self.incorrect_csv_filename = 'fixtures/TTxxx.csv'
         #TO DO: mock this call
@@ -110,7 +110,7 @@ class TestMapper(unittest.TestCase):
 class TestPreparer(unittest.TestCase):
 
     def setUp(self):
-        self.pr = Preparer()
+        self.pr = Preparer('ZOMBIE_TESTER')
         self.csv_filename = 'fixtures/TT1.csv'
         self.rows = [['936', 'YUMA', 'QUALITY INN & SUITES YUMA', 'The Comfort Inn hotel is conveniently located off Interstate 8 and U.S. Route 95, minutes from downtown Yuma, the Yuma International Airport, Old Town Yuma and the Marine Corps Air Station Yuma. This Yuma, AZ hotel is also close to the Yuma Palms Regional Center, the Yuma Proving Ground and Paradise Casino....', '', '', '', '', '', '', '', ''],
         ['15952', 'BROOKLYN', 'WYTHE HOTEL', '', "I Wythe Hotel nacque con la scoperta di una fabbrica sul lungofiume di Williamsburg. L'edificio risale al 1901 ed \xc3\xa8 stato convertito in un hotel da 70 camere. L'hotel ha un bar panoramico, una palestra, un parcheggio ed una sala cinema. Tutte le 70 camere dell'albergo sono dotate di accesso internet Wi-Fi gratuito, TV LED a schermo piatto, minibar rifornito interamente di prodotti locali e arredamento realizzato localmente. Le stazioni metropolitane per le linee L e G sono a breve distanza dall'albergo e Manhattan \xc3\xa8 facilmente raggiungibile con un breve viaggio in metropolitana.", '', '', 'Wythe Hotel started with the discovery of a factory on the Williamsburg waterfront. The building was constructed in 1901 and has been converted into a 70-room hotel. The Hotel has a rooftop bar, a gym, parking facility and a Screening Room. All the 70 rooms offer complimentary high speed Wi-Fi, flat screen LED HDTV, full-service locally sourced minibar and locally made furniture.\nThe subway stations for the lines L an G are nearby and is possible to reach Manhattan with a short ride on the subway.', '', '', '', '']]
