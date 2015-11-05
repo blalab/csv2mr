@@ -1,7 +1,8 @@
 #unitest_CSV2MR.py
 
 import unittest
-from CSV2MR import Mapper,Preparer
+import time
+from CSV2MR import Mapper,Preparer,Journaler
 
 class TestMapper(unittest.TestCase):
 
@@ -141,6 +142,58 @@ class TestPreparer(unittest.TestCase):
         itemlist.next() #Let the first item pass
         item = itemlist.next()
         self.assertEquals(item['1a3ffd3b']['it'][:20],'I Wythe Hotel nacque')
+
+
+class TestJournaler(unittest.TestCase):
+
+    def setUp(self):
+        self.jr = Journaler('ZOMBIE TESTER')
+        self.item = {u'cc784d6f': 'BROOKLYN', 
+                     u'4f9a647f': 'WYTHE HOTEL', 
+                     u'2aa59797': '', 
+                     u'8e5b7eb1': "I Wythe Hotel nacque con la scoperta di una fabbrica sul lungofiume di Williamsburg. L'edificio risale al 1901 ed \xc3\xa8 stato convertito in un hotel da 70 camere. L'hotel ha un bar panoramico, una palestra, un parcheggio ed una sala cinema. Tutte le 70 camere dell'albergo sono dotate di accesso internet Wi-Fi gratuito, TV LED a schermo piatto, minibar rifornito interamente di prodotti locali e arredamento realizzato localmente. Le stazioni metropolitane per le linee L e G sono a breve distanza dall'albergo e Manhattan \xc3\xa8 facilmente raggiungibile con un breve viaggio in metropolitana.", 
+                     u'1a3ffd3b': {'sp': ''}, 
+                     u'd88555ed': ''}
+
+    def tearDown(self):
+        self.jr.clean()
+
+    def test_set_get_new(self):
+
+        self.jr.set(self.item,'new')
+        result = self.jr.get(self.item)
+        self.assertEquals(result['s'],'new')
+
+    def test_set_get_post(self):
+
+        self.jr.set(self.item,'new')
+        self.jr.set(self.item,'posted')
+        result = self.jr.get(self.item)
+        self.assertEquals(result['s'],'posted')
+
+    def test_increase_count(self):
+
+        self.jr.increase_count('x')
+        self.jr.increase_count('x')
+        self.jr.increase_count('x')
+        self.jr.increase_count('y')
+        self.jr.increase_count('y')
+        self.jr.increase_count('x')
+
+        self.assertEquals(self.jr.count['x'],4)
+
+    def test_set_a_duplicate(self):
+
+        self.jr.set(self.item,'new')
+        result = self.jr.set(self.item,'new')       
+        self.assertFalse(result)
+
+    def test_set_a_duplicate_counter(self):
+
+        self.jr.set(self.item,'new')
+        self.jr.set(self.item,'new')  
+        self.assertEquals(self.jr.count['repeated'],1)
+
 
 
 

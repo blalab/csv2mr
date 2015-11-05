@@ -52,18 +52,18 @@ class Mapper:
 
         print('[%s]: So, you want to import data from a CSV file to a Ring right?  '%self.AI_agent)
 
-        csv_filename = xrn_step1(self.AI_agent)
-        columns = self.get_csv_header(csv_filename)
+        self.csv_filename = xrn_step1(self.AI_agent)
+        columns = self.get_csv_header(self.csv_filename)
 
-        ring_url = xrn_step2(self.AI_agent)
-        ring_url_parts = ring_url.split('?')
-        ring,fields = self.get_ring_schema(ring_url_parts[0]+'?schema=1')
+        self.ring_url = xrn_step2(self.AI_agent)
+        ring_url_parts = self.ring_url.split('?')
+        self.ring,self.fields = self.get_ring_schema(ring_url_parts[0]+'?schema=1')
 
         print('[%s]: Given the following CSV Columns:'%self.AI_agent)
         print(self.columns_menu_string(columns))
 
         
-        for f in fields:
+        for f in self.fields:
             if f['FieldMultilingual']:
                 self.map_multilingual_field(f,
                                             columns,
