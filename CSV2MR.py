@@ -7,7 +7,6 @@ from Preparer import Preparer
 from Journaler import Journaler
 from Poster import Poster
 
-
 if __name__ == '__main__':
 
     AI_agent = 'AVISPA'
@@ -53,13 +52,21 @@ if __name__ == '__main__':
         if '_invalid' in item:
             jr.set(item,'invalid')
         else:
-            jr.set(item,'new') # Record your intent in the journal
+            if not jr.set(item,'new'): # Record your intent in the journal
+                continue  # if false we should not post it. 
+
+                '''
+                Validation vs Journaler errors
+                Validation is able to detect errors in the item
+                Journaler is able to detect errors across items
+                '''
+
             result = pr.post(item)
             r = json.loads(result.text)
             print(r)
 
             # Record result in Journal
-            if result.status_code == 200: 
+            if result.status_code == requests.codes.ok: 
                 if r['Success']:
                     o = urlparse.urlparse(mp.ring_url)
                     item['_uri'] = urlparse.urlunparse((o.scheme, o.netloc, r['item'], '', '', ''))  
@@ -76,7 +83,6 @@ if __name__ == '__main__':
 
 
     print('FINAL COUNTS',jr.count)
-
 
     '''CLEANING'''
 

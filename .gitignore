@@ -2,10 +2,11 @@
 __pycache__/
 *.py[cod]
 
-#Temporary pickles
+#Journal
 map_*.pkl
 journal_*.pkl
 invalid_items_*.txt
+Journal/
 
 # osX
 .DS_Store

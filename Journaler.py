@@ -3,6 +3,7 @@ import os
 import cPickle
 import time
 import csv
+import errno
 
 class Journaler:
     '''
@@ -19,14 +20,30 @@ class Journaler:
 
         self.AI_agent = agent
         self.taskname = str(int(time.time()))
+        self.journal_root = 'Journal/'
+        self.make_sure_path_exists(self.journal_root)
+
         
         self.count = {}
 
         #Initialize Journal
-        j = {}
-        journal = open('journal_'+self.taskname+'.pkl','wb')  
-        cPickle.dump(j,journal)
-        journal.close()
+        
+
+        #journal = open('journal_'+self.taskname+'.pkl','wb')  
+        #journal = self.write_to_file('journal_'+self.taskname+'.pkl','wb')
+        with open(self.journal_root+'journal_'+self.taskname+'.pkl','wb') as journal:
+            j = {}
+            cPickle.dump(j,journal)
+        
+        #journal.close()
+
+
+    def make_sure_path_exists(self,path):
+        try:
+            os.makedirs(path)
+        except OSError as exception:
+            if exception.errno != errno.EEXIST:
+                raise
 
 
     def set(self,item,status):
@@ -49,17 +66,17 @@ class Journaler:
 
         if status == 'invalid':
             # Write item to invalid_items file
-            #self.create_file_if_exists_not('invalid_items_'+self.taskname+'.txt')
-            self.write_to_file('invalid_items_'+self.taskname+'.txt','a',repr(line)+' '+repr(item))
+            
+            self.write_to_file(self.journal_root+'invalid_items_'+self.taskname+'.txt','a',repr(line)+' '+repr(item))
 
         if status == 'posted':
-            self.write_to_file('posted_items_'+self.taskname+'.txt','a',repr(line)+' '+repr(item))
+            self.write_to_file(self.journal_root+'posted_items_'+self.taskname+'.txt','a',repr(line)+' '+repr(item))
                 
         try:
             #Retrieve journalfile
             j = {}
 
-            with open('journal_'+self.taskname+'.pkl', 'rb+') as f:
+            with open(self.journal_root+'journal_'+self.taskname+'.pkl', 'rb+') as f:
 
                 self.increase_count(status)
          
@@ -71,13 +88,14 @@ class Journaler:
                 #Modify journalfile
                 if status == 'new':
                     if item_hash in j:
+                        self.write_to_file(self.journal_root+'repeated_items_'+self.taskname+'.txt','a',repr(line)+' '+repr(item))
                         print('Repeated item! Ignoring it')
                         self.increase_count('repeated')
                         return False
                              
             j[item_hash] = line
 
-            with open('journal_'+self.taskname+'.pkl', 'wb+') as f:
+            with open(self.journal_root+'journal_'+self.taskname+'.pkl', 'wb+') as f:
 
                 #Save journalfile
                 #journal = open('journal_'+self.taskname+'.pkl','wb')
@@ -89,7 +107,7 @@ class Journaler:
 
             
           
-            print('OK',self.count[status],line)
+            print(status,self.count[status],line)
             return True
       
         except EOFError,e:
@@ -99,23 +117,20 @@ class Journaler:
 
             return False
 
-    def create_file_if_exists_not(self,path):
 
-        if not os.path.isfile(path): 
-            #Create the file
-            open(path,'w')
-                
-
+            
     def write_to_csv(self,path,mode,line):
 
         with open(path,mode) as f:
                     writer = csv.writer(f,delimiter=",")
                     writer.writerow(line)
 
-    def write_to_file(self,path,mode,line):
+    def write_to_file(self,path,mode,line=None):
 
         with open(path,mode) as f:
-            f.write("%s\n" % line)
+            if line:
+                f.write("%s\n" % line)
+
 
 
 
@@ -129,7 +144,7 @@ class Journaler:
 
     def get(self,item):
 
-        journal = open('journal_'+self.taskname+'.pkl', 'rb')
+        journal = open(self.journal_root+'journal_'+self.taskname+'.pkl', 'rb')
         j = cPickle.load(journal)
         journal.close() 
 
@@ -143,11 +158,11 @@ class Journaler:
 
     def clean(self):
 
-        if os.path.isfile('map_'+self.taskname+'.pkl'):
-            os.remove('map_'+self.taskname+'.pkl')
+        if os.path.isfile(self.journal_root+'map_'+self.taskname+'.pkl'):
+            os.remove(self.journal_root+'map_'+self.taskname+'.pkl')
 
-        if os.path.isfile('journal_'+self.taskname+'.pkl'):
-            os.remove('journal_'+self.taskname+'.pkl')
+        if os.path.isfile(self.journal_root+'journal_'+self.taskname+'.pkl'):
+            os.remove(self.journal_root+'journal_'+self.taskname+'.pkl')
 
 
 
