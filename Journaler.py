@@ -4,6 +4,7 @@ import cPickle
 import time
 import csv
 import errno
+import json
 
 class Journaler:
     '''
@@ -66,11 +67,11 @@ class Journaler:
 
         if status == 'invalid':
             # Write item to invalid_items file
-            
-            self.write_to_file(self.journal_root+'invalid_items_'+self.taskname+'.txt','a',repr(line)+' '+repr(item))
+            line['item'] = item         
+            self.write_to_file(self.journal_root+'invalid_items_'+self.taskname+'.txt','a',json.dumps(line))
 
         if status == 'posted':
-            self.write_to_file(self.journal_root+'posted_items_'+self.taskname+'.txt','a',repr(line)+' '+repr(item))
+            self.write_to_file(self.journal_root+'posted_items_'+self.taskname+'.txt','a',json.dumps(line))
                 
         try:
             #Retrieve journalfile
