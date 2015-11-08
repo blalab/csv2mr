@@ -2,6 +2,7 @@ import hashlib
 import os
 import cPickle
 import time
+import csv
 
 class Journaler:
     '''
@@ -29,42 +30,94 @@ class Journaler:
 
 
     def set(self,item,status):
-
-        
-        item_hash = hashlib.md5(repr(item)).hexdigest()      
+     
         line = {'s':status,'t':time.time()}
-                 
+
+        if '_error' in item:
+            line['e']=item['error']
+            del item['_error']
+
+        if '_msg' in item:
+            line['msg']=item['_msg']
+            del item['_msg']
+
+        if '_uri' in item:
+            line['uri']=item['_uri']
+            del item['_uri']
+
+        item_hash = hashlib.md5(repr(item)).hexdigest() 
+
+        if status == 'invalid':
+            # Write item to invalid_items file
+            #self.create_file_if_exists_not('invalid_items_'+self.taskname+'.txt')
+            self.write_to_file('invalid_items_'+self.taskname+'.txt','a',repr(line)+' '+repr(item))
+
+        if status == 'posted':
+            self.write_to_file('posted_items_'+self.taskname+'.txt','a',repr(line)+' '+repr(item))
+                
         try:
             #Retrieve journalfile
-            journal = open('journal_'+self.taskname+'.pkl', 'rb')
-            j = cPickle.load(journal)
-            journal.close()          
+            j = {}
 
-            #Modify journalfile
-            if status == 'new':
-                if item_hash in j:
-                    print('Repeated item! Ignoring it')
-                    self.increase_count('repeated')
-                    return False
-                         
+            with open('journal_'+self.taskname+'.pkl', 'rb+') as f:
+
+                self.increase_count(status)
+         
+                #journal = open('journal_'+self.taskname+'.pkl', 'wb+')
+                j = cPickle.load(f)
+                print('UNPickling the following:',j)
+                       
+
+                #Modify journalfile
+                if status == 'new':
+                    if item_hash in j:
+                        print('Repeated item! Ignoring it')
+                        self.increase_count('repeated')
+                        return False
+                             
             j[item_hash] = line
 
-            #Save journalfile
-            journal = open('journal_'+self.taskname+'.pkl','wb')
-            cPickle.dump(j,journal)
-            journal.close()
+            with open('journal_'+self.taskname+'.pkl', 'wb+') as f:
 
-            self.increase_count(status)
+                #Save journalfile
+                #journal = open('journal_'+self.taskname+'.pkl','wb')
+                #cPickle.dump(j,journal)
+                print('Pickling the following:',j)
+                cPickle.dump(j,f)
+                #journal.close()
+
+
+            
           
             print('OK',self.count[status],line)
             return True
       
         except EOFError,e:
 
-            self.increase_count('failed')
-            print('OK',self.count[status],line)
+            self.increase_count('journalingfailed')  #This is a Journal Error not a Post error
+            print('ERROR',self.count[status],line)
 
             return False
+
+    def create_file_if_exists_not(self,path):
+
+        if not os.path.isfile(path): 
+            #Create the file
+            open(path,'w')
+                
+
+    def write_to_csv(self,path,mode,line):
+
+        with open(path,mode) as f:
+                    writer = csv.writer(f,delimiter=",")
+                    writer.writerow(line)
+
+    def write_to_file(self,path,mode,line):
+
+        with open(path,mode) as f:
+            f.write("%s\n" % line)
+
+
 
     def increase_count(self,status):
 

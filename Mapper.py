@@ -86,7 +86,7 @@ class Mapper:
     def map_multilingual_field(self,f,columns,xmmf_step1=None,xmmf_step2=None,xmmf_step3=None):
 
         print('[%s]: "%s" is a Multilingual field '%(self.AI_agent,f['FieldLabel']))
-        langs = ['en','sp','it','fr']
+        langs = ['eng','spa','ita','fra']
         lang_dict = {}
         next_lang = True
         while next_lang:

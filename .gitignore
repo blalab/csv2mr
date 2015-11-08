@@ -5,6 +5,7 @@ __pycache__/
 #Temporary pickles
 map_*.pkl
 journal_*.pkl
+invalid_items_*.txt
 
 # osX
 .DS_Store

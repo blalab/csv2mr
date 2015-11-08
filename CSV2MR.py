@@ -1,8 +1,11 @@
 import cPickle
+import json
+import urlparse
 from time import time
 from Mapper import Mapper
 from Preparer import Preparer
 from Journaler import Journaler
+from Poster import Poster
 
 
 if __name__ == '__main__':
@@ -37,19 +40,39 @@ if __name__ == '__main__':
     openedfiles = pr.opener(mp.csv_filename)
     rows = pr.cat(openedfiles)
     itemlist = pr.populate(rows,pmap)
-    validitemlist = pr.populate(itemlist,mp.fields)
+    validitemlist = pr.validate(itemlist,mp.fields)
 
 
     '''POSTING'''
 
     #itemlist is a generator. 
-    for item in itemlist:
+    pr = Poster(AI_agent,mp.ring_url)
 
-        jr.set(item,'new')
-        post_200 = True   #Assuming this is returned by requests.post
+    for item in validitemlist:
 
-        if post_200:     
-            jr.set(item,'posted')
+        if '_invalid' in item:
+            jr.set(item,'invalid')
+        else:
+            jr.set(item,'new') # Record your intent in the journal
+            result = pr.post(item)
+            r = json.loads(result.text)
+            print(r)
+
+            # Record result in Journal
+            if result.status_code == 200: 
+                if r['Success']:
+                    o = urlparse.urlparse(mp.ring_url)
+                    item['_uri'] = urlparse.urlunparse((o.scheme, o.netloc, r['item'], '', '', ''))  
+                    jr.set(item,'posted') # Update the journal on success
+                else:
+                    item['_error'] = True
+                    item['_msg'] = r['Message']
+                    jr.set(item,'error')
+            else:
+                item['_error'] = True
+                item['_msg'] = 'status'+str(result.status_code)
+                jr.set(item,str(result.status_code))
+
 
 
     print('FINAL COUNTS',jr.count)
