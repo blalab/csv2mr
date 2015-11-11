@@ -63,8 +63,14 @@ if __name__ == '__main__':
                 '''
 
             result = pr.post(item)
-            r = json.loads(result.text)
-            print(r)
+
+
+            try:
+                r = json.loads(result.text)
+                print(r)
+
+            except(ValueError):
+                print('Other than JSON in the output')
 
             # Record result in Journal
             if result.status_code == requests.codes.ok: 

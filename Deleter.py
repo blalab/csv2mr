@@ -16,8 +16,8 @@ class Deleter:
         # Detect and repair if not API ready
         o = urlparse.urlparse(uri)
         parts = o.path.split('/')
-        if parts[0] != '_api':
-            path = '_api/'+o.path
+        if parts[1] != '_api':
+            path = '_api'+o.path
         else:
             path = o.path
 
@@ -34,7 +34,7 @@ class Deleter:
 
         q = json.loads(result.text)
         #{"uri": "teamamerica/vendortranslations/7997386758", "success": true, "method": "DELETE"}
-        if q['success'] and q['uri']=o.path and result.status_code == requests.codes.ok:
+        if q['success'] and q['uri']==o.path and result.status_code == requests.codes.ok:
             return True
         else:
             return False

@@ -12,6 +12,7 @@ Journal/
 .DS_Store
 
 # CSV files
+csvfiles/
 *.csv
 
 # C extensions
