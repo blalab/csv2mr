@@ -1,6 +1,7 @@
 import cPickle
 import json
 import urlparse
+import requests
 from time import time
 from Mapper import Mapper
 from Preparer import Preparer
@@ -23,13 +24,13 @@ if __name__ == '__main__':
             xmmf_step3=mp.mmf_step3, 
             xmrf_step1=mp.mrf_step1)
 
-    output = open('map_'+jr.taskname+'.pkl', 'wb')
+    output = open(jr.journal_root+'map_'+jr.taskname+'.pkl', 'wb')
     cPickle.dump(rmap, output)
     output.close()
 
     #It is better to decouple Map generation from Item preparation.
 
-    p = open('map_'+jr.taskname+'.pkl', 'rb')
+    p = open(jr.journal_root+'map_'+jr.taskname+'.pkl', 'rb')
     pmap = cPickle.load(p)
     p.close()
 

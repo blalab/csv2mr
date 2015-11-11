@@ -3,7 +3,13 @@
 import unittest
 import time
 import json
-from CSV2MR import Mapper,Preparer,Journaler,Poster
+import os
+import urlparse
+from Mapper import Mapper
+from Preparer import Preparer
+from Journaler import Journaler
+from Poster import Poster
+from Deleter import Deleter
 
 class TestMapper(unittest.TestCase):
 
@@ -185,13 +191,32 @@ class TestJournaler(unittest.TestCase):
     def tearDown(self):
         self.jr.clean()
 
+        
+        if os.path.isfile(self.jr.journal_root+'posted_items_'+self.jr.taskname+'.txt'):
+            os.remove(self.jr.journal_root+'posted_items_'+self.jr.taskname+'.txt')
+        
+
+        if os.path.isfile(self.jr.journal_root+'invalid_items_'+self.jr.taskname+'.txt'):
+            os.remove(self.jr.journal_root+'invalid_items_'+self.jr.taskname+'.txt')
+
+        if os.path.isfile(self.jr.journal_root+'repeated_items_'+self.jr.taskname+'.txt'):
+            os.remove(self.jr.journal_root+'repeated_items_'+self.jr.taskname+'.txt')
+        
+
     def test_set_get_new_item(self):
 
         self.jr.set(self.item,'new')
         result = self.jr.get(self.item)
         self.assertEquals(result['s'],'new')
 
-    def test_set_get_post_item(self):
+    def test_post_item(self):
+
+        self.jr.set(self.item,'new')
+        self.jr.set(self.item,'posted')
+        result = self.jr.get(self.item)
+        self.assertEquals(result['s'],'posted')
+
+    def test_post_item_outfile(self):
 
         self.jr.set(self.item,'new')
         self.jr.set(self.item,'posted')
@@ -267,8 +292,19 @@ class TestPoster(unittest.TestCase):
                      u'1a3ffd3b': {}, 
                      u'd88555ed': ''}
 
-
+        
         self.pr = Poster('ZOMBIE_TESTER',self.ring_url)
+
+        self.items_to_delete = []
+
+    def tearDown(self):
+        dl = Deleter('ZOMBIE_TESTER','Journal/')
+        o = urlparse.urlparse(self.ring_url)
+        
+        for item in self.items_to_delete:
+            url_api = urlparse.urlunparse((o.scheme,o.netloc,item,'','',''))
+            dl.delete(url_api)
+
 
     @unittest.skip('')
     def test_post(self):
@@ -276,6 +312,9 @@ class TestPoster(unittest.TestCase):
         result = self.pr.post(self.item)
         r = json.loads(result.text)
         print(r)
+        
+        self.ring_url
+        self.items_to_delete.append(r['item'])
         
         #print(r.Success)
         #u"{'item': 'teamamerica/vendortranslations/8420377079', 'Message': 'Item saved', 'Success': True}"
@@ -287,12 +326,15 @@ class TestPoster(unittest.TestCase):
         result1 = self.pr.post(self.item1)
         r1 = json.loads(result1.text)
         print(r1)
+        self.items_to_delete.append(r1['item'])
         result2 = self.pr.post(self.item2)
         r2 = json.loads(result2.text)
         print(r2)
+        self.items_to_delete.append(r2['item'])
         result3 = self.pr.post(self.item3)
         r3 = json.loads(result3.text)
         print(r3)
+        self.items_to_delete.append(r3['item'])
 
         self.assertEquals(r1['Success'] and r2['Success'] and r3['Success']  ,True)
 
@@ -301,7 +343,16 @@ class TestPoster(unittest.TestCase):
         result = self.pr.post(self.emptyitem)
         r = json.loads(result.text)
         print(r)
+        self.items_to_delete.append(r['item'])
         self.assertEquals(r['Success'],True)
+
+
+class TestDeleter(unittest.TestCase):
+
+    def setUp(self):
+        pass
+
+
 
 
 
